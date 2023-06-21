@@ -211,7 +211,7 @@ const CourseDetail = () => {
                           <strong>
                             {moment(
                               topics
-                                .map((topic, i) =>
+                                ?.map((topic, i) =>
                                   topic?.topicChildData.reduce(
                                     (accumulator, currentValue) =>
                                       accumulator +

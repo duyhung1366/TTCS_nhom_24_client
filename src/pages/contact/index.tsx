@@ -9,7 +9,7 @@ const cx = classNames.bind(styles);
 
 const ContactPages = () => {
   const onFinish = (values: any) => {
-    console.log(values);
+    // console.log(values);
   };
 
   return (

@@ -910,9 +910,21 @@
         margin: 0 !important;
       }
     }
+
+    @include responsive(xs) {
+      padding: 1.6rem 0.8rem !important;
+    }
   }
 
   & > div > div:nth-child(2) {
     padding: 0 0 0 4rem !important;
+
+    @include responsive(xs) {
+      padding: 0 0 0 1.6rem !important;
+    }
+
+    @include responsive(sm) {
+      padding: 0 0 0 2.4rem !important;
+    }
   }
 }

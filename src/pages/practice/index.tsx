@@ -84,6 +84,7 @@ const PracticePages = () => {
   const [idQuestion, setIdQuestion] = useState<string>();
   const [timeCoundown, setTimeCoundown] = useState<number>(moment().valueOf());
   const [timeRemake, setTimeRemake] = useState<any>(0);
+  // const [progress, setProgress] = useState<any[]>([]);
 
   const timePratice = useRef<any>();
   const { Countdown } = Statistic;
@@ -95,15 +96,28 @@ const PracticePages = () => {
   }, []);
 
   useEffect(() => {
-    if (userInfo?.progess?.find((o) => o.idTopic === params.idChild)) {
-      userInfo?.progess?.find(
-        (o) => o.idTopic === params.idChild && setSelectedQuestions(o.answers)
+    if (params.id) {
+      const arg = params.id.split("-");
+      // setProgress({ ...userInfo?.progress }[arg[0]]);
+    }
+    loadQuestionByTopic(params.idChild || "", 1);
+    loadCourse(params.slugChild || "");
+    loadTopicById(params.idChild || "");
+  }, [params.idChild, params.slugChild, params.id]);
+
+  useEffect(() => {
+    const progress = { ...userInfo?.progress };
+    if (progress[course?.id || ""]?.find((o) => o.idTopic === params.idChild)) {
+      progress[course?.id || ""]?.find(
+        (o) =>
+          o.idTopic === params.idChild && setSelectedQuestions(o.answers || [])
       );
       // setTimeRemake(
-      //   userInfo?.progess?.find((o) => o.idTopic === params.idChild)?.timeStudy
+      //   progress[course?.id || ""]?.find((o) => o.idTopic === params.idChild)?.timeStudy
       // );
       setStatusLearn(
-        userInfo?.progess?.find((o) => o.idTopic === params.idChild)?.status
+        progress[course?.id || ""]?.find((o) => o.idTopic === params.idChild)
+          ?.status
       );
       setIsReview(true);
       setCorrect(0);
@@ -115,12 +129,6 @@ const PracticePages = () => {
       setTimeCoundown(Date.now() + (topic?.timeExam || 0) * 1000 * 60);
     }
   }, [params.idChild, userInfo, topic?.id]);
-
-  useEffect(() => {
-    loadQuestionByTopic(params.idChild || "", 1);
-    loadCourse(params.slugChild || "");
-    loadTopicById(params.idChild || "");
-  }, [params.idChild, params.slugChild]);
 
   // useEffect(() => {
   //   if (!isReview) {
@@ -198,6 +206,7 @@ const PracticePages = () => {
       const result = await dispatch(
         requestUpdateStudiedForUser({
           idTopic: topic?.id || "",
+          idCourse: course?.id || "",
           idUser: userInfo?._id || "",
           status: TTCSconfig.STATUS_LEARNED,
           timeStudy: timePratice.current,
@@ -221,6 +230,7 @@ const PracticePages = () => {
       const result = await dispatch(
         requestUpdateStudiedForUser({
           idTopic: topic?.id || "",
+          idCourse: course?.id || "",
           idUser: userInfo?._id || "",
           status: TTCSconfig.STATUS_LEARNING,
           timeStudy: timePratice.current,
@@ -680,7 +690,7 @@ const PracticePages = () => {
                       {isReview &&
                         statusLearn === TTCSconfig.STATUS_LEARNED && (
                           <div className={cx("practice__palette--review")}>
-                            {userInfo?.progess?.map(
+                            {{ ...userInfo?.progress }[course?.id || ""]?.map(
                               (o, i) =>
                                 o.idTopic === topic?.id && (
                                   <div key={i}>
@@ -900,7 +910,7 @@ const PracticePages = () => {
                     <div className={cx("practice__palette--body")}>
                       {isReview && (
                         <div className={cx("practice__palette--review")}>
-                          {userInfo?.progess?.map(
+                          {{ ...userInfo?.progress }[course?.id || ""]?.map(
                             (o, i) =>
                               o.idTopic === topic?.id && (
                                 <div key={i}>
@@ -934,7 +944,7 @@ const PracticePages = () => {
                                         Câu đúng
                                       </span>
                                       <span style={{ fontSize: "2.2rem" }}>
-                                        {o.correctQuestion}
+                                        {o.correctQuestion || 0}
                                       </span>
                                     </Col>
                                     <Col

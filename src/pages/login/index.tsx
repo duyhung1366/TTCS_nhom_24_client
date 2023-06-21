@@ -36,9 +36,6 @@ const LoginPages = () => {
   }, [userInfo]);
 
   const [user, setUser] = useState<any>();
-  const [profile, setProfile] = useState<any>();
-
-  console.log(profile);
 
   const login = useGoogleLogin({
     onSuccess: (codeResponse) => setUser(codeResponse),
@@ -58,7 +55,6 @@ const LoginPages = () => {
           }
         )
         .then((res) => {
-          setProfile(res.data);
           handleLoginWithGoogle(res.data);
         })
         .catch((err) => console.log(err));
@@ -71,8 +67,9 @@ const LoginPages = () => {
         requestLoginWithGoogle({
           name: data.name,
           account: data.email,
-          facebookId: data.id,
+          googleId: data.id,
           avatar: data.picture,
+          email: data.email,
         })
       );
 
@@ -104,7 +101,6 @@ const LoginPages = () => {
   // log out function to log the user out of google and set the profile array to null
   const logOut = () => {
     googleLogout();
-    setProfile(null);
     setUser(null);
   };
 

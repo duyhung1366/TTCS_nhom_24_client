@@ -44,8 +44,9 @@ export const requestLoginWithGoogle = createAsyncThunk(
   async (props: {
     name: string;
     account: string;
-    facebookId: string;
+    googleId: string;
     avatar: string;
+    email: string;
   }) => {
     const res = await apiLoginWithGoogle(props);
     return res.data;
@@ -62,7 +63,7 @@ export const requestGetUserFromToken = createAsyncThunk(
 
 export const requestUpdateUserInfo = createAsyncThunk(
   "user/updateUserInfo",
-  async (props: { token: any; userInfo: UserInfo }) => {
+  async (props: { token: any; userInfo: any }) => {
     const res = await apiUpdateUser(props);
     return res.data;
   }
@@ -80,6 +81,7 @@ export const requestUpdateStudiedForUser = createAsyncThunk(
   "user/updateStudiedForUser",
   async (props: {
     idTopic: string;
+    idCourse: string;
     idUser: string;
     status?: number;
     timeStudy: number;

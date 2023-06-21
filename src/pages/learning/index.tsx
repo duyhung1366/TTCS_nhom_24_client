@@ -108,15 +108,20 @@ const LearningPages = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
-
+  const [progress, setProgress] = useState<any[]>([]);
   const videoPlayerRef = useRef<any>(null);
 
   useEffect(() => {
     if (params.id) {
-      loadTopicByParam(params.id);
+      const arg = params.id.split("-");
+      setProgress({ ...userInfo?.progress }[arg[0]]);
+      if (Number(arg[1]) === TTCSconfig.TYPE_LESSON) {
+        loadTopicByCourse(arg[0], Number(arg[1]));
+      } else {
+        navigate(-1);
+      }
     }
     loadCourse(params.slugChild || "");
-
     // if (topics.length) {
     //   handleChangeTopic(topics[0]?.topicChild[0]);
     // }
@@ -126,6 +131,7 @@ const LearningPages = () => {
     if (course?.id && userInfo?._id) {
       loadTotalLearnedTopic(course?.id, userInfo?._id);
     }
+    setProgress({ ...userInfo?.progress }[course?.id || ""]);
   }, [course?.id, userInfo?._id, userInfo]);
 
   useEffect(() => {
@@ -140,9 +146,11 @@ const LearningPages = () => {
       dataTopicActive?.topicType === TTCSconfig.TYPE_TOPIC_VIDEO &&
       dataTopicActive?.id
     ) {
-      videoPlayerRef.current.currentTime =
-        userInfo?.progess?.find((o) => o.idTopic === dataTopicActive?.id)
-          ?.timeStudy || 0;
+      if (progress?.find((o) => o.idTopic === dataTopicActive?.id)?.timeStudy) {
+        videoPlayerRef.current.currentTime =
+          progress?.find((o) => o.idTopic === dataTopicActive?.id)?.timeStudy ||
+          0;
+      }
       setIsModalOpen(false);
     }
     if (dataTopicActive?.timePracticeInVideo?.length) {
@@ -155,18 +163,19 @@ const LearningPages = () => {
       setTotalQs(0);
     }
 
-    if (userInfo?.progess?.find((o) => o.idTopic === dataTopicActive?.id)) {
-      userInfo?.progess?.find(
-        (o) =>
-          o.idTopic === dataTopicActive?.id && setSelectedQuestions(o.answers)
-      );
+    if (progress?.find((o) => o.idTopic === dataTopicActive?.id)) {
+      progress?.find((o) => {
+        o.idTopic === dataTopicActive?.id &&
+          setSelectedQuestions(o.answers || []);
+      });
       setIsReview(true);
     } else {
       setSelectedQuestions([]);
       setIsReview(false);
     }
 
-    handleUpdateDocument(dataTopicActive?.id || "", userInfo?._id || "");
+    dataTopicActive?.topicType === TTCSconfig.TYPE_TOPIC_DOCUMENT &&
+      handleUpdateDocument(dataTopicActive?.id || "", userInfo?._id || "");
 
     return () => {
       dataTopicActive?.id &&
@@ -224,15 +233,6 @@ const LearningPages = () => {
         message: "server error!!",
         duration: 1.5,
       });
-    }
-  };
-
-  const loadTopicByParam = (param: string) => {
-    const arg = param.split("-");
-    if (Number(arg[1]) === TTCSconfig.TYPE_LESSON) {
-      loadTopicByCourse(arg[0], Number(arg[1]));
-    } else {
-      navigate(-1);
     }
   };
 
@@ -311,11 +311,12 @@ const LearningPages = () => {
       if (
         dataTopicActive?.topicType === TTCSconfig.TYPE_TOPIC_DOCUMENT &&
         dataTopicActive &&
-        !userInfo?.progess?.find((o) => o.idTopic === idTopic)
+        !progress?.find((o) => o.idTopic === idTopic)
       ) {
         const result = await dispatch(
           requestUpdateStudiedForUser({
             idTopic,
+            idCourse: course?.id || "",
             idUser,
             status: TTCSconfig.STATUS_LEARNED,
             timeStudy: 0,
@@ -338,14 +339,12 @@ const LearningPages = () => {
     status?: number
   ) => {
     try {
-      if (
-        !userInfo?.progess?.find((o) => o.idTopic === idTopic && o.status === 2)
-      ) {
-        console.log("b");
+      if (!progress?.find((o) => o.idTopic === idTopic && o.status === 2)) {
         if (status) {
           const result = await dispatch(
             requestUpdateStudiedForUser({
               idTopic,
+              idCourse: course?.id || "",
               idUser,
               status,
               timeStudy,
@@ -356,6 +355,7 @@ const LearningPages = () => {
           const result = await dispatch(
             requestUpdateStudiedForUser({
               idTopic,
+              idCourse: course?.id || "",
               idUser,
               timeStudy,
             })
@@ -372,7 +372,7 @@ const LearningPages = () => {
   };
 
   const handlSaveSelected = (idQuestion: string, idAnswer: string) => {
-    if (selectedQuestions.find((o) => o.idQuestion === idQuestion)) {
+    if (selectedQuestions?.find((o) => o.idQuestion === idQuestion)) {
       setSelectedQuestions([
         ...selectedQuestions.filter((c) => c.idQuestion !== idQuestion),
         {
@@ -396,6 +396,7 @@ const LearningPages = () => {
       const result = await dispatch(
         requestUpdateStudiedForUser({
           idTopic: dataTopicActive?.id || "",
+          idCourse: course?.id || "",
           idUser: userInfo?._id || "",
           status: TTCSconfig.STATUS_LEARNED,
           timeStudy: 0,
@@ -419,10 +420,6 @@ const LearningPages = () => {
 
   const handleShowSider = () => {
     setIsShowSider(!isShowSider);
-  };
-
-  const handleShowModal = () => {
-    setIsModalOpen(true);
   };
 
   const handleCancelModal = () => {
@@ -484,8 +481,10 @@ const LearningPages = () => {
         userInfo &&
         realtime.joinComment({ idTopic: dataTopicActive?.id, userInfo });
       realtime.loadComment(dispatch);
+      realtime.updateComment(dispatch);
+      realtime.deleteComment(dispatch);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       notification.error({
         message: "lỗi server, không tải được dữ liệu",
         duration: 1.5,
@@ -590,7 +589,7 @@ const LearningPages = () => {
                             <span className={cx("learning__track--item-desc")}>
                               {
                                 topic.topicChildData.filter((o1) =>
-                                  userInfo?.progess?.some(
+                                  progress?.some(
                                     (o2) =>
                                       o2.idTopic === o1.id &&
                                       o1.status === TTCSconfig.STATUS_PUBLIC
@@ -631,7 +630,7 @@ const LearningPages = () => {
                             <span className={cx("learning__track--item-desc")}>
                               {
                                 topic.topicChildData.filter((o1) =>
-                                  userInfo?.progess?.some(
+                                  progress?.some(
                                     (o2) =>
                                       o2.idTopic === o1.id &&
                                       o1.status === TTCSconfig.STATUS_PUBLIC
@@ -737,7 +736,7 @@ const LearningPages = () => {
                                           "learning__track--steps-status"
                                         )}
                                       >
-                                        {userInfo?.progess?.find(
+                                        {progress?.find(
                                           (c) =>
                                             c.idTopic === topicChild.id &&
                                             c.status ===
@@ -964,7 +963,7 @@ const LearningPages = () => {
                       <div className={cx("game__view")} key={index}>
                         <div className={cx("game__view--question")}>
                           <div className={cx("game__view--question-index")}>
-                            <span>{qs.index}.&nbsp;</span>
+                            <span>{index + 1}.&nbsp;</span>
                           </div>
                           <div className={cx("game__view--question-text")}>
                             <div

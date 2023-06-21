@@ -39,10 +39,12 @@ const ExamPages = () => {
   const userInfo = useAppSelector(authState).userInfo;
   const [indexOpenTopic, setIndexOpenTopic] = useState<number[]>([1]);
   const navigate = useNavigate();
+  const [progress, setProgress] = useState<any[]>([]);
 
   useEffect(() => {
     if (params.id) {
       const arg = params.id.split("-");
+      setProgress({ ...userInfo?.progress }[arg[0]]);
       if (Number(arg[1]) === TTCSconfig.TYPE_EXAM) {
         loadTopicByCourse(arg[0], Number(arg[1]));
       } else {
@@ -227,7 +229,7 @@ const ExamPages = () => {
                                                   {dataChild?.timeExam} phút
                                                 </span>
                                               </div>
-                                              {userInfo?.progess?.map(
+                                              {progress?.map(
                                                 (o) =>
                                                   o.idTopic ===
                                                     dataChild.id && (
@@ -238,7 +240,7 @@ const ExamPages = () => {
                                                       key={o.idTopic}
                                                     >
                                                       <span>
-                                                        {o.score} điểm
+                                                        {o.score || 0} điểm
                                                       </span>
                                                     </div>
                                                   )
@@ -253,7 +255,7 @@ const ExamPages = () => {
                                               okText="Yes"
                                               cancelText="No"
                                             >
-                                              {userInfo?.progess?.find(
+                                              {progress?.find(
                                                 (o) =>
                                                   o.idTopic === dataChild.id
                                               ) ? (

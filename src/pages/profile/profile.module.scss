@@ -67,10 +67,45 @@
   justify-content: center;
 }
 
-.profile__icon {
+.profile__img {
   width: 20rem;
   height: 20rem;
-  color: var(--secondaryColor);
+  position: relative;
+  cursor: pointer;
+  border-radius: 50%;
+
+  @include responsive(xs) {
+    width: 15rem;
+    height: 15rem;
+  }
+
+  @include responsive(sm) {
+    width: 16rem;
+    height: 16rem;
+  }
+
+  @include responsive(md) {
+    width: 18rem;
+    height: 18rem;
+  }
+
+  // &:hover ~ .profile__upload--icon {
+  //   opacity: 1;
+  // }
+}
+
+.profile__img--loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  height: 20rem;
+  width: 20rem;
+
+  background: rgba(0, 0, 0, 0.08);
+  position: relative;
+  cursor: pointer;
+  border-radius: 50%;
 
   @include responsive(xs) {
     width: 15rem;
@@ -88,12 +123,71 @@
   }
 }
 
+.profile__upload--icon {
+  position: absolute;
+  font-size: 3rem;
+  color: #fff;
+  opacity: 0;
+  transform: translate(0%, 275%);
+  transition: ease-in-out 0.3s all;
+
+  @include responsive(xs) {
+    transform: translate(0%, 200%);
+  }
+
+  @include responsive(sm) {
+    transform: translate(0%, 200%);
+  }
+
+  &:hover {
+    opacity: 1;
+    cursor: pointer;
+  }
+}
+
+.profile__img--fallback {
+  background-color: #f1ded0;
+  color: var(--secondaryColor);
+  font-size: 10rem;
+
+  & > span {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(1) translate(-50%, -2%) !important;
+  }
+}
+
+.profile__avatar--upload {
+  &:hover ~ .profile__upload--icon {
+    opacity: 1;
+  }
+  // &:hover::before {
+  //   content: "";
+  //   position: absolute;
+  //   top: 50%;
+  //   left: 50%;
+  //   transform: translate(-50%, -50%);
+  //   width: 50px;
+  //   height: 50px;
+  //   border-radius: 50%;
+  //   background-color: red;
+  // }
+}
+
 .profile__username {
   text-align: center;
   margin: 2rem;
   font-weight: 500;
   font-size: 1.8rem;
   font-family: var(--font-family);
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 100%;
 
   @include responsive(xs) {
     margin: 1rem 0 3rem;

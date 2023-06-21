@@ -1,5 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { apiLoadComments, apiUpdateComment } from "../../api/comment";
+import {
+  apiLoadComments,
+  apiSendReactionComment,
+  apiUpdateComment,
+} from "../../api/comment";
 import TTCSconfig from "../../submodule/common/config";
 import { Comment } from "../../submodule/models/comment";
 import { RootState } from "../store";
@@ -27,6 +31,15 @@ export const requestUpdateComment = createAsyncThunk(
     return res.data;
   }
 );
+
+export const requestSendReactionComment = createAsyncThunk(
+  "comment/requestSendReactionComment",
+  async (props: { idComment: string; idUser: string; type: number }) => {
+    const res = await apiSendReactionComment(props);
+    return res.data;
+  }
+);
+
 export const requestLoadComments = createAsyncThunk(
   "comment/requestLoadComments",
   async (props: { idTopic: string; limit?: number; skip?: number }) => {
@@ -50,8 +63,19 @@ export const commentSlice = createSlice({
       } else {
         // create
         state.comments = [data, ...comments];
+        state.total++;
       }
     },
+    deleteCommentSoket: (
+      state,
+      action: PayloadAction<{ id: string; idTopic: string }>
+    ) => {
+      const comments = [...state.comments];
+      state.comments = comments.filter(
+        (comment) => comment.id !== action.payload.id
+      );
+    },
+
     setComments: (state, action) => {
       const data = action.payload;
       state.comments = [...state.comments, ...data];
@@ -101,10 +125,22 @@ export const commentSlice = createSlice({
         state.loadingUpdate = false;
       }
     );
+
+    // update
+    builder.addCase(requestSendReactionComment.pending, (state) => {
+      state.loadingUpdate = true;
+    });
+    builder.addCase(requestSendReactionComment.rejected, (state) => {
+      state.loadingUpdate = false;
+    });
+    builder.addCase(requestSendReactionComment.fulfilled, (state) => {
+      state.loadingUpdate = false;
+    });
   },
 });
 
-export const { updateCommentSocket, setComments } = commentSlice.actions;
+export const { updateCommentSocket, setComments, deleteCommentSoket } =
+  commentSlice.actions;
 
 export const commentState = (state: RootState) => state.comment;
 

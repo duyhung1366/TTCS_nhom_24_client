@@ -11,9 +11,17 @@ const TinyMCEEditor = (props: {
   keyMCE?: string;
   placeholder?: string;
   height?: number;
-  onChange?: (value: string) => void
+  value?: string;
+  onChange?: (value: string) => void;
 }) => {
-  const { editorRef, keyMCE = '', placeholder = "", height = 500, onChange } = props;
+  const {
+    editorRef,
+    keyMCE = "",
+    placeholder = "",
+    height = 500,
+    onChange,
+    value,
+  } = props;
 
   const handleImageUpload: any = async (
     blobInfo: any,
@@ -23,7 +31,7 @@ const TinyMCEEditor = (props: {
     // const formData = new FormData();
     // formData.append("image", blobInfo.blob(), blobInfo.filename());
     try {
-      const res = await apiUploadFile(blobInfo.blob(), blobInfo.filename())
+      const res = await apiUploadFile(blobInfo.blob(), blobInfo.filename());
       success(res.data);
     } catch (error) {
       console.error(error);
@@ -37,7 +45,10 @@ const TinyMCEEditor = (props: {
         key={keyMCE}
         apiKey="x7iqyfri0yduoqx0qrv9r5h50yq6gj7bybcu12uc2x2a9qkl"
         // onChange={(_, editor) => {onChange}}
-        onEditorChange={(value, editor) => { onChange && onChange(value) }}
+        onEditorChange={(value, editor) => {
+          onChange && onChange(value);
+        }}
+        initialValue={value}
         init={{
           height: height,
           menubar: true,
